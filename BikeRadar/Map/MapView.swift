@@ -31,6 +31,7 @@ struct MapView: View {
     @State private var selectedResult: MKMapItem?
     @State private var route: MKRoute?
     @State private var selectedTag: String?
+    @State private var lookAroundScene: MKLookAroundScene?
     
     var body: some View {
         Map(position: $position, selection: $selectedTag) {
@@ -53,6 +54,7 @@ struct MapView: View {
                         }
                         .onTapGesture {
                             getDirections(station: station)
+                            getLookAroundScene(station: station)
                         }
                     // .tag(station.id)
                 }
@@ -71,22 +73,12 @@ struct MapView: View {
         }
         .mapStyle(.standard(elevation: .realistic))
         .safeAreaInset(edge: .bottom) {
-            HStack {
-                Spacer()
-                
-                VStack(spacing: 0) {
-                    if let selectedResult {
-                        ItemInfoView(selectedResult: selectedResult, route: route)
-                            .frame(height: 128)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .padding([.top, .horizontal])
-                    }
-                    MapButtons(dataService: dataService, position: $position, searchResults: $searchResults, stationResults: $stationResults, visibleRegion: visibleRegion)
-                        .padding(.top)
-                }
-                Spacer()
+            if let lookAroundScene {
+                LookAroundPreview(initialScene: lookAroundScene)
+                    .frame(height: 128)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .padding([.top, .horizontal])
             }
-            .background(.ultraThinMaterial)
         }
         .onChange(of: searchResults) {
             position = .automatic
@@ -117,7 +109,17 @@ struct MapView: View {
         Task {
             let directions = MKDirections(request: request)
             let response = try? await directions.calculate()
-            route = response?.routes.first
+            withAnimation {
+                route = response?.routes.first
+            }
+        }
+    }
+    
+    func getLookAroundScene(station: Station) {
+        lookAroundScene = nil
+        Task {
+            let request = MKLookAroundSceneRequest(coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude))
+            lookAroundScene = try? await request.scene
         }
     }
 }
