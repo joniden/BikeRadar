@@ -26,23 +26,12 @@ struct MapView: View {
     @ObservedObject var locationsHandler = LocationsHandler.shared
     @State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
     @State private var visibleRegion: MKCoordinateRegion?
-    @State private var searchResults: [MKMapItem] = []
-    @State private var stationResults: [Station] = []
-    @State private var selectedResult: MKMapItem?
     @State private var route: MKRoute?
-    @State private var selectedTag: String?
-    @State private var lookAroundScene: MKLookAroundScene?
+    @State private var selectedStation: Station?
     
     var body: some View {
-        Map(position: $position, selection: $selectedTag) {
-            
-            ForEach(searchResults, id: \.self) { result in
-                Marker(item: result)
-            }
-            .annotationTitles(.hidden)
-            
+        Map(position: $position) {
             ForEach(dataService.stations) { station in
-                //  Marker(station.name ?? "no name", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude))
                 Annotation("Bike station", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)) {
                     Circle()
                         .fill(Color.accentColor)
@@ -54,12 +43,11 @@ struct MapView: View {
                         }
                         .onTapGesture {
                             getDirections(station: station)
-                            getLookAroundScene(station: station)
+                            selectedStation = station
                         }
-                    // .tag(station.id)
                 }
             }
-          //  .annotationTitles(.hidden)
+            //  .annotationTitles(.hidden)
             
             if let route {
                 MapPolyline(route)
@@ -73,14 +61,11 @@ struct MapView: View {
         }
         .mapStyle(.standard(elevation: .realistic))
         .safeAreaInset(edge: .bottom) {
-            if let lookAroundScene {
-                LookAroundPreview(initialScene: lookAroundScene)
-                    .frame(height: 128)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .padding([.top, .horizontal])
+            if let selectedStation {
+                ItemInfoView(selectedStation: selectedStation)
             }
         }
-        .onChange(of: searchResults) {
+        .onChange(of: dataService.stations) {
             position = .automatic
         }
         .onMapCameraChange { context in
@@ -114,21 +99,13 @@ struct MapView: View {
             }
         }
     }
-    
-    func getLookAroundScene(station: Station) {
-        lookAroundScene = nil
-        Task {
-            let request = MKLookAroundSceneRequest(coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude))
-            lookAroundScene = try? await request.scene
-        }
-    }
 }
 
 /*#Preview {
-    MapView()
-}*/
+ MapView()
+ }*/
 
-struct MapButtons: View {
+/*struct MapButtons: View {
     @ObservedObject var dataService: LocationsDataService
     @Binding var position: MapCameraPosition
     @Binding var searchResults: [MKMapItem]
@@ -169,7 +146,7 @@ struct MapButtons: View {
             Button {
                 addBikeSharingStations(dataService.stations)
                 print("stationResults: \(stationResults)")
-
+                
             } label: {
                 Label("Bike Stations", systemImage: "bicycle")
             }
@@ -218,4 +195,4 @@ struct MapButtons: View {
             print("searchResults: \(searchResults)")
         }
     }
-}
+}*/

@@ -11,7 +11,7 @@ import MapKit
 struct ItemInfoView: View {
     @State private var lookAroundScene: MKLookAroundScene?
     
-    var selectedResult: MKMapItem
+    var selectedStation: Station
     var route: MKRoute?
     
     private var travelTime: String? {
@@ -23,30 +23,29 @@ struct ItemInfoView: View {
     }
     
     var body: some View {
-        LookAroundPreview(initialScene: lookAroundScene)
-            .overlay(alignment: .bottomTrailing) {
-                HStack {
-                    Text("\(selectedResult.name ?? "")")
-                    if let travelTime {
-                        Text(travelTime)
-                    }
-                }
-                .font(.caption)
-                .foregroundStyle(.white)
-                .padding(10)
+        VStack {
+            Button {
+                getLookAroundScene(station: selectedStation)
+            } label: {
+                Text("Look Around")
             }
-            .onAppear {
-                getLookAroundScene()
+            
+            if let lookAroundScene {
+                LookAroundPreview(initialScene: lookAroundScene)
+                    .frame(height: 128)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .padding([.top, .horizontal])
             }
-            .onChange(of: selectedResult) {
-                getLookAroundScene()
-            }
+        }
+        .onChange(of: selectedStation) {
+            getLookAroundScene(station: selectedStation)
+        }
     }
     
-    func getLookAroundScene() {
+    func getLookAroundScene(station: Station) {
         lookAroundScene = nil
         Task {
-            let request = MKLookAroundSceneRequest(mapItem: selectedResult)
+            let request = MKLookAroundSceneRequest(coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude))
             lookAroundScene = try? await request.scene
         }
     }
