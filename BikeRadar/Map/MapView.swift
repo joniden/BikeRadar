@@ -22,10 +22,12 @@ extension MKCoordinateRegion {
 }
 
 struct MapView: View {
+    @ObservedObject var dataService: LocationsDataService
     @ObservedObject var locationsHandler = LocationsHandler.shared
     @State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
     @State private var visibleRegion: MKCoordinateRegion?
     @State private var searchResults: [MKMapItem] = []
+    @State private var stationResults: [CLLocationCoordinate2D] = []
     @State private var selectedResult: MKMapItem?
     @State private var route: MKRoute?
     
@@ -36,6 +38,14 @@ struct MapView: View {
                 Marker(item: result)
             }
             .annotationTitles(.hidden)
+            
+        /*    ForEach(Array(stationResults.enumerated()), id: \.self) { station in
+                Marker("Bikes", coordinate: station)
+            }
+            .annotationTitles(.hidden)*/
+            if stationResults.count > 0 {
+                Marker("Bikes", coordinate: stationResults[0])
+            }
             
             if let route {
                 MapPolyline(route)
@@ -56,7 +66,7 @@ struct MapView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .padding([.top, .horizontal])
                     }
-                    MapButtons(position: $position, searchResults: $searchResults, visibleRegion: visibleRegion)
+                    MapButtons(dataService: dataService, position: $position, searchResults: $searchResults, stationResults: $stationResults, visibleRegion: visibleRegion)
                         .padding(.top)
                 }
                 Spacer()
@@ -101,13 +111,15 @@ struct MapView: View {
     }
 }
 
-#Preview {
+/*#Preview {
     MapView()
-}
+}*/
 
 struct MapButtons: View {
+    @ObservedObject var dataService: LocationsDataService
     @Binding var position: MapCameraPosition
     @Binding var searchResults: [MKMapItem]
+    @Binding var stationResults: [CLLocationCoordinate2D]
     
     var visibleRegion: MKCoordinateRegion?
     
@@ -140,8 +152,36 @@ struct MapButtons: View {
                 Label("North Shore", systemImage: "water.waves")
             }
             .buttonStyle(.bordered)
+            
+            Button {
+              //  print("dataService.stations \(dataService.stations)")
+                addBikeSharingStations(dataService.stations)
+                print("stationResults: \(stationResults)")
+
+            } label: {
+                Label("Bike Stations", systemImage: "bicycle")
+            }
+            .buttonStyle(.bordered)
         }
         .labelStyle(.iconOnly)
+    }
+    
+    func addBikeSharingStations(_ stations: [Station]) {
+        let request = MKLocalSearch.Request()
+        request.region = visibleRegion ?? MKCoordinateRegion(
+            center: .parking,
+            span: MKCoordinateSpan(latitudeDelta: 0.0125, longitudeDelta: 0.0125)
+        )
+        
+        var coordinates: [CLLocationCoordinate2D] = []
+        
+        for station in stations {
+            let stationCoordinates = CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)
+            coordinates.append(stationCoordinates)
+        }
+        Task {
+            stationResults = coordinates
+        }
     }
     
     func search(for query: String) {
@@ -157,6 +197,7 @@ struct MapButtons: View {
             let search = MKLocalSearch(request: request)
             let response = try? await search.start()
             searchResults = response?.mapItems ?? []
+            print("searchResults: \(searchResults)")
         }
     }
 }
