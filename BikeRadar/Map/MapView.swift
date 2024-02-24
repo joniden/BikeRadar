@@ -8,9 +8,9 @@
 import SwiftUI
 import MapKit
 
-extension CLLocationCoordinate2D {
+/*extension CLLocationCoordinate2D {
     static let parking = CLLocationCoordinate2D(latitude: 42.354528, longitude: -71.068369)
-}
+}*/
 
 extension MKCoordinateRegion {
     static let boston = MKCoordinateRegion(
@@ -28,6 +28,8 @@ struct MapView: View {
     @State private var visibleRegion: MKCoordinateRegion?
     @State private var route: MKRoute?
     @State private var selectedStation: Station?
+    @State private var selectedCity: MKCoordinateRegion?
+    @State var network: Network
     
     var body: some View {
         Map(position: $position) {
@@ -57,6 +59,11 @@ struct MapView: View {
             UserAnnotation()
         }
         .onAppear {
+            selectedCity = MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: network.location.latitude, longitude: network.location.longitude), span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
+            if let selectedCity {
+                position = .region(selectedCity)
+            }
             print("dataservice stations count \(dataService.stations[0])")
         }
         .mapStyle(.standard(elevation: .realistic))

@@ -63,7 +63,7 @@ struct NetworkDetail: View {
 
             Spacer()
             NavigationLink {
-                MapView(dataService: dataService)
+                MapView(dataService: dataService, network: network)
             } label: {
                 Text("MapView")
             }
