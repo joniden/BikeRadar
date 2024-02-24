@@ -35,8 +35,8 @@ class LocationsDataService: ObservableObject {
     }
     
     func fetchStations(networkId: String) async throws {
-        let urlString = "http://api.citybik.es/v2/networks/" + networkId
-        print("networkId: \(urlString)")
+        let urlString = "http://api.citybik.es/v2/networks/" + networkId + "?fields=stations"
+        print("urlString: \(urlString)")
         
         guard let url = URL(string: urlString) else {
             throw NetworkError.invalidURL
@@ -70,9 +70,9 @@ struct NetworkResponse: Decodable {
 struct Network: Identifiable, Decodable {
     let company: [String]?
     let href: String?
-    let location: Location
+    let location: Location?
     let name: String?
-    let id: String
+    let id: String?
     let stations: [Station]?
 }
 
@@ -85,7 +85,6 @@ struct Location: Codable {
 
 struct Station: Identifiable, Decodable, Equatable {
     let emptySlots: Int
-    let extra: Extra?
     let freeBikes: Int
     let id: String
     let latitude: Double
@@ -96,14 +95,8 @@ struct Station: Identifiable, Decodable, Equatable {
 
 extension Station {
     static func == (lhs: Station, rhs: Station) -> Bool {
-        return lhs.id == rhs.id // You can customize the equality check based on your requirements
+        return lhs.id == rhs.id
     }
-}
-
-struct Extra: Decodable {
-    let address: String
-    let status: String
-    let uid: Int
 }
 
 enum NetworkError: Error {

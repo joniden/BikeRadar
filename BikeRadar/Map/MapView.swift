@@ -18,7 +18,6 @@ extension MKCoordinateRegion {
     )
     
     static let northShore = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.547408, longitude: -70.870085), span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5))
-    
 }
 
 struct MapView: View {
@@ -59,12 +58,14 @@ struct MapView: View {
             UserAnnotation()
         }
         .onAppear {
-            selectedCity = MKCoordinateRegion(
-                center: CLLocationCoordinate2D(latitude: network.location.latitude, longitude: network.location.longitude), span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
+            if let city = network.location {
+                selectedCity = MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: city.latitude, longitude: city.longitude), span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
+            }
             if let selectedCity {
                 position = .region(selectedCity)
             }
-            print("dataservice stations count \(dataService.stations[0])")
+           // print("dataservice stations count \(dataService.stations[0])")
         }
         .mapStyle(.standard(elevation: .realistic))
         .safeAreaInset(edge: .bottom) {
