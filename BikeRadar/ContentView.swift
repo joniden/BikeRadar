@@ -62,6 +62,12 @@ struct NetworkDetail: View {
                 .padding()
 
             Spacer()
+            NavigationLink {
+                MapView()
+            } label: {
+                Text("MapView")
+            }
+
         }
         .navigationTitle(network.name ?? "No name")
         .task {
