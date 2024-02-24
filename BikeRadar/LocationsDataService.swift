@@ -83,7 +83,7 @@ struct Location: Codable {
     let country: String
 }
 
-struct Station: Identifiable, Decodable {
+struct Station: Identifiable, Decodable, Equatable {
     let emptySlots: Int
     let extra: Extra?
     let freeBikes: Int
@@ -92,6 +92,12 @@ struct Station: Identifiable, Decodable {
     let longitude: Double
     let name: String?
     let timestamp: String
+}
+
+extension Station {
+    static func == (lhs: Station, rhs: Station) -> Bool {
+        return lhs.id == rhs.id // You can customize the equality check based on your requirements
+    }
 }
 
 struct Extra: Decodable {

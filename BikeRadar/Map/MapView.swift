@@ -30,7 +30,7 @@ struct MapView: View {
     @State private var stationResults: [Station] = []
     @State private var selectedResult: MKMapItem?
     @State private var route: MKRoute?
-    @State private var selectedTag: Int?
+    @State private var selectedTag: String?
     
     var body: some View {
         Map(position: $position, selection: $selectedTag) {
@@ -41,8 +41,21 @@ struct MapView: View {
             .annotationTitles(.hidden)
             
             ForEach(dataService.stations) { station in
-                Marker(station.name ?? "no name", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude))
-                  //  .tag(1)
+                //  Marker(station.name ?? "no name", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude))
+                Annotation("Bike station", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)) {
+                    Circle()
+                        .fill(Color.accentColor)
+                        .frame(width: 30, height: 30)
+                        .overlay {
+                            Image(systemName: "mappin.circle")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        }
+                        .onTapGesture {
+                            getDirections(station: station)
+                        }
+                    // .tag(station.id)
+                }
             }
           //  .annotationTitles(.hidden)
             
@@ -78,9 +91,6 @@ struct MapView: View {
         .onChange(of: searchResults) {
             position = .automatic
         }
-        .onChange(of: selectedResult) {
-            getDirections()
-        }
         .onMapCameraChange { context in
             visibleRegion = context.region
         }
@@ -94,16 +104,15 @@ struct MapView: View {
         }
     }
     
-    func getDirections() {
+    func getDirections(station: Station) {
         route = nil
-        guard let selectedResult else { return }
         
         let location = locationsHandler.manager.location
         guard let coordinate = location?.coordinate else { return }
         
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
-        request.destination = selectedResult
+        request.destination = MKMapItem(placemark: .init(coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)))
         
         Task {
             let directions = MKDirections(request: request)
