@@ -13,6 +13,7 @@ struct ItemInfoView: View {
     @State private var lookAroundScene: MKLookAroundScene?
     @State private var showLookAround = false
     @Binding var route: MKRoute?
+    @Binding var showRoute: Bool
     
     var selectedStation: Station
     
@@ -121,7 +122,7 @@ struct ItemInfoView: View {
                                 .foregroundColor(.secondary)
                         }
                         Button {
-                            getDirections(station: selectedStation)
+                            showRoute = true
                         } label: {
                             Text("See Route")
                                 .font(.caption)
@@ -143,7 +144,8 @@ struct ItemInfoView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding()
         .onChange(of: selectedStation) {
-            route = nil
+            getDirections(station: selectedStation)
+            showRoute = false
         }
         .onChange(of: showLookAround) {
             if showLookAround {
@@ -184,5 +186,5 @@ struct ItemInfoView: View {
 }
 
 #Preview {
-    ItemInfoView(route: .constant(nil), selectedStation: Station(emptySlots: 14, freeBikes: 10, id: "87492ed48d78c573f95e99bc7f87ac9d", latitude: 55.60899, longitude: 12.99907, name: "Malmö C Norra", timestamp: "2024-02-25T08:34:42.895000Z"))
+    ItemInfoView(route: .constant(nil), showRoute: .constant(false), selectedStation: Station(emptySlots: 14, freeBikes: 10, id: "87492ed48d78c573f95e99bc7f87ac9d", latitude: 55.60899, longitude: 12.99907, name: "Malmö C Norra", timestamp: "2024-02-25T08:34:42.895000Z"))
 }

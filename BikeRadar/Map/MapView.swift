@@ -9,8 +9,8 @@ import SwiftUI
 import MapKit
 
 /*extension CLLocationCoordinate2D {
-    static let parking = CLLocationCoordinate2D(latitude: 42.354528, longitude: -71.068369)
-}*/
+ static let parking = CLLocationCoordinate2D(latitude: 42.354528, longitude: -71.068369)
+ }*/
 
 extension MKCoordinateRegion {
     static let boston = MKCoordinateRegion(
@@ -26,6 +26,7 @@ struct MapView: View {
     @State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
     @State private var visibleRegion: MKCoordinateRegion?
     @State private var route: MKRoute?
+    @State private var showRoute = false
     @State private var selectedStation: Station?
     @State private var selectedCity: MKCoordinateRegion?
     @State var network: Network
@@ -50,8 +51,10 @@ struct MapView: View {
             //  .annotationTitles(.hidden)
             
             if let route {
-                MapPolyline(route)
-                    .stroke(.blue, lineWidth: 5)
+                if showRoute {
+                    MapPolyline(route)
+                        .stroke(.blue, lineWidth: 5)
+                }
             }
             
             UserAnnotation()
@@ -71,15 +74,15 @@ struct MapView: View {
         .mapStyle(.standard(elevation: .realistic))
         .safeAreaInset(edge: .bottom) {
             if let selectedStation {
-                ItemInfoView(route: $route, selectedStation: selectedStation)
+                ItemInfoView(route: $route, showRoute: $showRoute, selectedStation: selectedStation)
             }
         }
         .onChange(of: dataService.stations) {
             position = .automatic
         }
-       /* .onChange(of: selectedStation, {
-            
-        })*/
+        /* .onChange(of: selectedStation, {
+         
+         })*/
         .onMapCameraChange { context in
             visibleRegion = context.region
         }
@@ -96,95 +99,3 @@ struct MapView: View {
 /*#Preview {
  MapView()
  }*/
-
-/*struct MapButtons: View {
-    @ObservedObject var dataService: LocationsDataService
-    @Binding var position: MapCameraPosition
-    @Binding var searchResults: [MKMapItem]
-    @Binding var stationResults: [Station]
-    
-    var visibleRegion: MKCoordinateRegion?
-    
-    var body: some View {
-        HStack {
-            Button {
-                search(for: "playground")
-            } label: {
-                Label("Playgrounds", systemImage: "figure.and.child.holdinghands")
-            }
-            .buttonStyle(.borderedProminent)
-            
-            Button {
-                search(for: "beach")
-            } label: {
-                Label("Beaches", systemImage: "beach.umbrella")
-            }
-            .buttonStyle(.borderedProminent)
-            
-            Button {
-                position = .region(.boston)
-            } label: {
-                Label("Boston", systemImage: "building.2")
-            }
-            .buttonStyle(.bordered)
-            
-            Button {
-                position = .region(.northShore)
-            } label: {
-                Label("North Shore", systemImage: "water.waves")
-            }
-            .buttonStyle(.bordered)
-            
-            Button {
-                addBikeSharingStations(dataService.stations)
-                print("stationResults: \(stationResults)")
-                
-            } label: {
-                Label("Bike Stations", systemImage: "bicycle")
-            }
-            .buttonStyle(.bordered)
-        }
-        .labelStyle(.iconOnly)
-    }
-    
-    func addBikeSharingStations(_ stations: [Station]) {
-        let request = MKLocalSearch.Request()
-        request.region = visibleRegion ?? MKCoordinateRegion(
-            center: .parking,
-            span: MKCoordinateSpan(latitudeDelta: 0.0125, longitudeDelta: 0.0125)
-        )
-        
-        var mapItems = [MKMapItem]()
-        
-        for station in stations {
-            let coordinate = CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)
-            let placemark = MKPlacemark(coordinate: coordinate, addressDictionary: nil)
-            
-            let mapItem = MKMapItem(placemark: placemark)
-            mapItem.name = station.name
-            mapItem.phoneNumber = String(station.freeBikes)
-            mapItem.url = URL(string: "https://www.example.com")
-            mapItems.append(mapItem)
-        }
-        Task {
-            stationResults = stations
-        }
-    }
-    
-    func search(for query: String) {
-        let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = query
-        request.resultTypes = .pointOfInterest
-        request.region = visibleRegion ?? MKCoordinateRegion(
-            center: .parking,
-            span: MKCoordinateSpan(latitudeDelta: 0.0125, longitudeDelta: 0.0125)
-        )
-        
-        Task {
-            let search = MKLocalSearch(request: request)
-            let response = try? await search.start()
-            searchResults = response?.mapItems ?? []
-            print("searchResults: \(searchResults)")
-        }
-    }
-}*/
