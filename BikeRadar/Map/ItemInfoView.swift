@@ -59,7 +59,7 @@ struct ItemInfoView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text("\(selectedStation.name ?? "")")
                     .font(.title2)
@@ -78,7 +78,7 @@ struct ItemInfoView: View {
             }
             
             ZStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     VStack(alignment: .leading) {
                         HStack(alignment: .bottom, spacing: 4) {
                             Text("Free bikes:")
@@ -116,29 +116,32 @@ struct ItemInfoView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
+                            
+                        }
+                        HStack {
+                            Button {
+                                showRoute = true
+                            } label: {
+                                Text("See Route")
+                                    .font(.caption)
+                            }
+                            
                             Spacer()
+                            
                             Text("Last updated \(timestamp)")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-                        Button {
-                            showRoute = true
-                        } label: {
-                            Text("See Route")
-                                .font(.caption)
-                        }
+                        
                     }
                 }
                 if let lookAroundScene {
                     LookAroundPreview(initialScene: lookAroundScene)
                         .frame(height: 128)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
-                    //  .padding([.top, .horizontal])
                 }
             }
         }
-        
-        
         .padding()
         .background(RoundedRectangle(cornerRadius: 15).fill(Color.white))
         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -146,6 +149,7 @@ struct ItemInfoView: View {
         .onChange(of: selectedStation) {
             getDirections(station: selectedStation)
             showRoute = false
+            showLookAround = false
         }
         .onChange(of: showLookAround) {
             if showLookAround {

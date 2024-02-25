@@ -18,6 +18,8 @@ struct MapView: View {
     @State private var selectedStation: Station?
     @State private var selectedCity: MKCoordinateRegion?
     @State var network: Network
+    @State private var showInfoView = false
+    @State var viewState = CGSize.zero
     
     var body: some View {
         Map(position: $position) {
@@ -33,6 +35,7 @@ struct MapView: View {
                         }
                         .onTapGesture {
                             selectedStation = station
+                            showInfoView = true
                         }
                 }
             }
@@ -61,7 +64,26 @@ struct MapView: View {
         .mapStyle(.standard(elevation: .realistic))
         .safeAreaInset(edge: .bottom) {
             if let selectedStation {
-                ItemInfoView(route: $route, showRoute: $showRoute, selectedStation: selectedStation)
+                if showInfoView {
+                    ItemInfoView(route: $route, showRoute: $showRoute, selectedStation: selectedStation)
+                        .offset(x: 0, y: viewState.height)
+                        .gesture(
+                            DragGesture().onChanged{ value in
+                                if value.translation.height > viewState.height {
+                                    viewState = value.translation
+                                }
+                            }
+                                .onEnded { value in
+                                    withAnimation(.spring()) {
+                                        viewState = .zero
+                                    }
+                                    if value.translation.height > 80 {
+                                        showInfoView = false
+                                        
+                                    }
+                                }
+                        )
+                }
             }
         }
         .onChange(of: dataService.stations) {
@@ -77,9 +99,9 @@ struct MapView: View {
         .onChange(of: showRoute) {
             if let route {
                 let routeRect = route.polyline.boundingMapRect
-               // let paddedRouteRect = routeRect.insetBy(dx: -100, dy: -100)
+                // let paddedRouteRect = routeRect.insetBy(dx: -100, dy: -100)
                 var routeRegion = MKCoordinateRegion(routeRect)
-              //  routeRegion.span = MKCoordinateSpan(latitudeDelta: 0.043, longitudeDelta: 0.043)
+                //  routeRegion.span = MKCoordinateSpan(latitudeDelta: 0.043, longitudeDelta: 0.043)
                 position = .region(routeRegion)
             }
         }
