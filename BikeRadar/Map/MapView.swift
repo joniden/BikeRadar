@@ -8,18 +8,6 @@
 import SwiftUI
 import MapKit
 
-/*extension CLLocationCoordinate2D {
- static let parking = CLLocationCoordinate2D(latitude: 42.354528, longitude: -71.068369)
- }*/
-
-extension MKCoordinateRegion {
-    static let boston = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 42.360256, longitude: -71.057279), span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
-    )
-    
-    static let northShore = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 42.547408, longitude: -70.870085), span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5))
-}
-
 struct MapView: View {
     @ObservedObject var dataService: LocationsDataService
     @ObservedObject var locationsHandler = LocationsHandler.shared
@@ -48,7 +36,6 @@ struct MapView: View {
                         }
                 }
             }
-            //  .annotationTitles(.hidden)
             
             if let route {
                 if showRoute {
@@ -80,9 +67,22 @@ struct MapView: View {
         .onChange(of: dataService.stations) {
             position = .automatic
         }
-        /* .onChange(of: selectedStation, {
-         
-         })*/
+        .onChange(of: selectedStation) {
+            if let selectedStation {
+                let selectedStationRegion = MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: selectedStation.latitude, longitude: selectedStation.longitude), span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02))
+                position = .region(selectedStationRegion)
+            }
+        }
+        .onChange(of: showRoute) {
+            if let route {
+                let routeRect = route.polyline.boundingMapRect
+               // let paddedRouteRect = routeRect.insetBy(dx: -100, dy: -100)
+                var routeRegion = MKCoordinateRegion(routeRect)
+              //  routeRegion.span = MKCoordinateSpan(latitudeDelta: 0.043, longitudeDelta: 0.043)
+                position = .region(routeRegion)
+            }
+        }
         .onMapCameraChange { context in
             visibleRegion = context.region
         }
@@ -92,8 +92,6 @@ struct MapView: View {
             MapScaleView()
         }
     }
-    
-    
 }
 
 /*#Preview {
