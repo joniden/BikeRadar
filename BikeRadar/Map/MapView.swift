@@ -57,6 +57,9 @@ struct MapView: View {
             UserAnnotation()
         }
         .onAppear {
+            locationsHandler.requestATTPermission()
+        }
+        .onAppear {
             if let city = network.location {
                 selectedCity = MKCoordinateRegion(
                     center: CLLocationCoordinate2D(latitude: city.latitude, longitude: city.longitude), span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
@@ -68,7 +71,7 @@ struct MapView: View {
         .mapStyle(.standard(elevation: .realistic))
         .safeAreaInset(edge: .bottom) {
             if let selectedStation {
-                ItemInfoView(selectedStation: selectedStation)
+                ItemInfoView(route: $route, selectedStation: selectedStation)
             }
         }
         .onChange(of: dataService.stations) {
@@ -84,9 +87,6 @@ struct MapView: View {
             MapUserLocationButton()
             MapCompass()
             MapScaleView()
-        }
-        .onAppear {
-            locationsHandler.requestATTPermission()
         }
     }
     

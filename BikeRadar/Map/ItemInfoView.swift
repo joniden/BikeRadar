@@ -12,7 +12,7 @@ struct ItemInfoView: View {
     @ObservedObject var locationsHandler = LocationsHandler.shared
     @State private var lookAroundScene: MKLookAroundScene?
     @State private var showLookAround = false
-    @State private var route: MKRoute?
+    @Binding var route: MKRoute?
     
     var selectedStation: Station
     
@@ -77,7 +77,7 @@ struct ItemInfoView: View {
             }
             
             ZStack {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 4) {
                     VStack(alignment: .leading) {
                         HStack(alignment: .bottom, spacing: 4) {
                             Text("Free bikes:")
@@ -97,28 +97,35 @@ struct ItemInfoView: View {
                                 .fontWeight(.bold)
                         }
                     }
-                    
-                    HStack {
-                        if let distance {
-                            Image(systemName: "location.fill")
-                                .font(.caption)
-                                .foregroundColor(.accentColor)
-                            Text("\(distance) away")
+                    VStack(alignment: .leading) {
+                        HStack {
+                            if let distance {
+                                Image(systemName: "location.fill")
+                                    .font(.caption)
+                                    .foregroundColor(.accentColor)
+                                Text("\(distance) away")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            if let travelTime {
+                                Image(systemName: "figure.walk")
+                                    .font(.caption)
+                                    .foregroundColor(.accentColor)
+                                Text("\(travelTime)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Text("Last updated \(timestamp)")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-                        if let travelTime {
-                            Image(systemName: "figure.walk")
+                        Button {
+                            getDirections(station: selectedStation)
+                        } label: {
+                            Text("See Route")
                                 .font(.caption)
-                                .foregroundColor(.accentColor)
-                            Text("\(travelTime)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
-                        Spacer()
-                        Text("Last updated \(timestamp)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
                     }
                 }
                 if let lookAroundScene {
@@ -136,7 +143,7 @@ struct ItemInfoView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding()
         .onChange(of: selectedStation) {
-            getDirections(station: selectedStation)
+            route = nil
         }
         .onChange(of: showLookAround) {
             if showLookAround {
@@ -177,5 +184,5 @@ struct ItemInfoView: View {
 }
 
 #Preview {
-    ItemInfoView(selectedStation: Station(emptySlots: 14, freeBikes: 10, id: "87492ed48d78c573f95e99bc7f87ac9d", latitude: 55.60899, longitude: 12.99907, name: "Malmö C Norra", timestamp: "2024-02-25T08:34:42.895000Z"))
+    ItemInfoView(route: .constant(nil), selectedStation: Station(emptySlots: 14, freeBikes: 10, id: "87492ed48d78c573f95e99bc7f87ac9d", latitude: 55.60899, longitude: 12.99907, name: "Malmö C Norra", timestamp: "2024-02-25T08:34:42.895000Z"))
 }
