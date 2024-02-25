@@ -13,7 +13,7 @@ struct ContentView: View {
     @State private var city: String = ""
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 TextField("Search for your city", text: $city)
                     .textFieldStyle(RoundedBorderTextFieldStyle())

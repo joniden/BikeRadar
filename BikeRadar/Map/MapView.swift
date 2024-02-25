@@ -49,6 +49,8 @@ struct MapView: View {
             
             UserAnnotation()
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
             locationsHandler.requestATTPermission()
         }
