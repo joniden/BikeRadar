@@ -7,14 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C808090F2B893A0700351294 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C808090E2B893A0700351294 /* MapView.swift */; };
+		C80809112B89DE4300351294 /* ItemInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80809102B89DE4300351294 /* ItemInfoView.swift */; };
 		C816CBC92B88CF220088B711 /* BikeRadarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C816CBC82B88CF220088B711 /* BikeRadarApp.swift */; };
 		C816CBCB2B88CF220088B711 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C816CBCA2B88CF220088B711 /* ContentView.swift */; };
 		C816CBCD2B88CF240088B711 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C816CBCC2B88CF240088B711 /* Assets.xcassets */; };
 		C816CBD02B88CF240088B711 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C816CBCF2B88CF240088B711 /* Preview Assets.xcassets */; };
 		C816CBDC2B88D2180088B711 /* LocationsDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C816CBDB2B88D2180088B711 /* LocationsDataService.swift */; };
+		C88915D82B8A0EF50072362E /* LocationsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88915D72B8A0EF50072362E /* LocationsHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C808090E2B893A0700351294 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		C80809102B89DE4300351294 /* ItemInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemInfoView.swift; sourceTree = "<group>"; };
 		C816CBC52B88CF220088B711 /* BikeRadar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BikeRadar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C816CBC82B88CF220088B711 /* BikeRadarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BikeRadarApp.swift; sourceTree = "<group>"; };
 		C816CBCA2B88CF220088B711 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -22,6 +27,7 @@
 		C816CBCF2B88CF240088B711 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		C816CBDB2B88D2180088B711 /* LocationsDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsDataService.swift; sourceTree = "<group>"; };
 		C816CBE22B88DF220088B711 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		C88915D72B8A0EF50072362E /* LocationsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationsHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +60,7 @@
 		C816CBC72B88CF220088B711 /* BikeRadar */ = {
 			isa = PBXGroup;
 			children = (
+				C88915D92B8A159A0072362E /* Map */,
 				C816CBE22B88DF220088B711 /* Info.plist */,
 				C816CBC82B88CF220088B711 /* BikeRadarApp.swift */,
 				C816CBCA2B88CF220088B711 /* ContentView.swift */,
@@ -70,6 +77,16 @@
 				C816CBCF2B88CF240088B711 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		C88915D92B8A159A0072362E /* Map */ = {
+			isa = PBXGroup;
+			children = (
+				C808090E2B893A0700351294 /* MapView.swift */,
+				C80809102B89DE4300351294 /* ItemInfoView.swift */,
+				C88915D72B8A0EF50072362E /* LocationsHandler.swift */,
+			);
+			path = Map;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -143,6 +160,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				C816CBCB2B88CF220088B711 /* ContentView.swift in Sources */,
+				C808090F2B893A0700351294 /* MapView.swift in Sources */,
+				C80809112B89DE4300351294 /* ItemInfoView.swift in Sources */,
+				C88915D82B8A0EF50072362E /* LocationsHandler.swift in Sources */,
 				C816CBC92B88CF220088B711 /* BikeRadarApp.swift in Sources */,
 				C816CBDC2B88D2180088B711 /* LocationsDataService.swift in Sources */,
 			);
@@ -282,6 +302,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BikeRadar/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Allow location?";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow location?";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "We use this information to personalize your experience and improve our app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -312,6 +335,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BikeRadar/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Allow location?";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow location?";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "We use this information to personalize your experience and improve our app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

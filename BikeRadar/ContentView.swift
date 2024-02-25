@@ -26,7 +26,7 @@ struct ContentView: View {
                         Spacer()
                     } else {
                         List(dataService.networks) { network in
-                            if city == network.location.city {
+                            if city == network.location?.city {
                                 NavigationLink(destination: NetworkDetail(dataService: dataService, network: network)) {
                                     Text(network.name ?? "No network name")
                                 }
@@ -58,15 +58,21 @@ struct NetworkDetail: View {
             Text("Name: \(network.name ?? "No name")")
                 .padding()
 
-            Text("Location: \(network.location.latitude), \(network.location.longitude)")
+        //    Text("Location: \(network.location.latitude), \(network.location.longitude)")
                 .padding()
 
             Spacer()
+            NavigationLink {
+                MapView(dataService: dataService, network: network)
+            } label: {
+                Text("MapView")
+            }
+
         }
         .navigationTitle(network.name ?? "No name")
         .task {
             do {
-                try await dataService.fetchStations(networkId: network.id)
+                try await dataService.fetchStations(networkId: network.id ?? "noId")
                 print("stations: \(dataService.stations.count)")
                 print("stations id: \(dataService.stations[0].id)")
             } catch {
