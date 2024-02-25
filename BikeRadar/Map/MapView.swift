@@ -33,7 +33,7 @@ struct MapView: View {
     var body: some View {
         Map(position: $position) {
             ForEach(dataService.stations) { station in
-                Annotation("Bike station", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)) {
+                Annotation(station.name ?? "\(network.name ?? "Bike") Station", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)) {
                     Circle()
                         .fill(Color.accentColor)
                         .frame(width: 30, height: 30)
@@ -43,7 +43,6 @@ struct MapView: View {
                                 .aspectRatio(contentMode: .fit)
                         }
                         .onTapGesture {
-                            getDirections(station: station)
                             selectedStation = station
                         }
                 }
@@ -65,7 +64,6 @@ struct MapView: View {
             if let selectedCity {
                 position = .region(selectedCity)
             }
-           // print("dataservice stations count \(dataService.stations[0])")
         }
         .mapStyle(.standard(elevation: .realistic))
         .safeAreaInset(edge: .bottom) {
@@ -76,6 +74,9 @@ struct MapView: View {
         .onChange(of: dataService.stations) {
             position = .automatic
         }
+       /* .onChange(of: selectedStation, {
+            
+        })*/
         .onMapCameraChange { context in
             visibleRegion = context.region
         }
@@ -89,24 +90,7 @@ struct MapView: View {
         }
     }
     
-    func getDirections(station: Station) {
-        route = nil
-        
-        let location = locationsHandler.manager.location
-        guard let coordinate = location?.coordinate else { return }
-        
-        let request = MKDirections.Request()
-        request.source = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
-        request.destination = MKMapItem(placemark: .init(coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)))
-        
-        Task {
-            let directions = MKDirections(request: request)
-            let response = try? await directions.calculate()
-            withAnimation {
-                route = response?.routes.first
-            }
-        }
-    }
+    
 }
 
 /*#Preview {
