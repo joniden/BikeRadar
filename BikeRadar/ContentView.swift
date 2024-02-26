@@ -6,63 +6,148 @@
 //
 
 import SwiftUI
+import Combine
 
 struct ContentView: View {
     
     @StateObject private var dataService = LocationsDataService()
-    @State private var city: String = ""
+    @State private var textInput: String = ""
+    let textInputPublisher = PassthroughSubject<String, Never>()
+    @State private var searchText = ""
+    @State private var selectedCity: String? = nil
+    @State private var networks: [Network] = []
+    let imageNames = ["tiffany", "westend", "fixie"]
+    @State var image = ""
     
     var body: some View {
-        NavigationView {
-            VStack {
-                TextField("Search for your city", text: $city)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-                Text("You entered: \(city)")
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Find bikes in...")
+                    .font(.title)
+                    .foregroundStyle(Color.primary)
+                    .padding(.top, 32)
                 
-                VStack {
+                TextField("Type a city", text: $textInput)
+                    .font(.title)
+                    .padding()
+                    .foregroundColor(.primary)
+                    .background(RoundedRectangle(cornerRadius: 10).foregroundColor(.secondary.opacity(0.2)))
+                    .onChange(of: textInput) {
+                        textInputPublisher.send(textInput)
+                    }
+                    .onReceive(textInputPublisher
+                        .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+                        .removeDuplicates()
+                    ) { debouncedTextInput in
+                        searchText = debouncedTextInput
+                    }
+                ScrollView {
                     if dataService.networks.isEmpty {
                         Text("Loading data...")
-                        Spacer()
+                            .foregroundStyle(Color.secondary)
+                            .padding()
                     } else {
-                        List(dataService.networks) { network in
-                            if city == network.location.city {
-                                NavigationLink(destination: NetworkDetail(network: network)) {
-                                    Text(network.name)
+                        if let selectedCity {
+                            // Show list of networks for selected city
+                            ForEach(networks) { network in
+                                NavigationLink(destination: MapView(dataService: dataService, network: network)) {
+                                    HStack {
+                                        Text(network.name ?? "test")
+                                            .font(.title2)
+                                            .foregroundStyle(Color.primary)
+                                            .multilineTextAlignment(.leading)
+                                            .padding(4)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .foregroundStyle(Color.primary)
+                                    }
                                 }
+                            }
+                            Spacer()
+                        } else {
+                            // Show list of cities
+                            LazyVStack(alignment: .leading) {
+                                ForEach(filteredCities, id: \.self) { city in
+                                    Button {
+                                        selectedCity = city
+                                    } label: {
+                                        HStack {
+                                            Text(city)
+                                                .font(.title2)
+                                                .foregroundStyle(Color.primary)
+                                                .multilineTextAlignment(.leading)
+                                                .padding(4)
+                                            Spacer()
+                                            Image(systemName: "chevron.right")
+                                                .foregroundStyle(Color.primary)
+                                        }
+                                    }
+                                }
+                                Spacer()
                             }
                         }
                     }
                 }
+                .onChange(of: selectedCity) {
+                    if let selectedCity {
+                        networks = networksForCity(selectedCity)
+                    } else {
+                        networks = []
+                    }
+                }
             }
-        }
-        .task {
-            do {
-                try await dataService.fetchData()
-                print("networks: \(dataService.networks.count)")
-                print("networks id: \(dataService.networks[0].id)")
-            } catch {
-                // handle error
-                print("Failed to fetch data: \(error)")
+            .padding()
+            .background(alignment: .center, content: {
+                GeometryReader { geometry in
+                    Image(image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: geometry.size.width)
+                        .ignoresSafeArea()
+                        .overlay {
+                            Color.white.opacity(0.3)
+                                .ignoresSafeArea()
+                        }
+                }
+            })
+            .task {
+                do {
+                    image = imageNames.randomElement() ?? "tiffany"
+                    print("contentview Appeared")
+                    try await dataService.fetchData()
+                    print("networks: \(dataService.networks.count)")
+                } catch {
+                    // handle error
+                    print("Failed to fetch data: \(error)")
+                }
+            }
+            .onChange(of: selectedCity) {
+                print("selectedCity \(selectedCity)")
+            }
+            .onDisappear {
+                // Reset search-related variables
+                searchText = ""
+                textInput = ""
+                selectedCity = nil
+                networks = []
+                print("contentview Disappeared")
             }
         }
     }
-}
-
-struct NetworkDetail: View {
-    let network: Network
-
-    var body: some View {
-        VStack {
-            Text("Name: \(network.name)")
-                .padding()
-
-            Text("Location: \(network.location.latitude), \(network.location.longitude)")
-                .padding()
-
-            Spacer()
+    
+    private var filteredCities: [String] {
+        return dataService.networks
+            .compactMap { $0.location?.city }
+            .filter {
+                $0.lowercased().contains(searchText.lowercased())
+            }
+    }
+    
+    private func networksForCity(_ city: String) -> [Network] {
+        print("Fetching networks for \(city)")
+        return dataService.networks.filter { network in
+            return network.location?.city.lowercased() == city.lowercased()
         }
-        .navigationTitle(network.name)
     }
 }
 
