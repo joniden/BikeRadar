@@ -13,7 +13,7 @@ import AppTrackingTransparency
     
     static let shared = LocationsHandler()
     public let manager: CLLocationManager
-
+    
     init() {
         self.manager = CLLocationManager()
         if self.manager.authorizationStatus == .notDetermined {
