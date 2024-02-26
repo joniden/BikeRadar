@@ -42,7 +42,7 @@ struct MapView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
             locationsHandler.requestATTPermission()
-
+            
             if let city = network.location {
                 selectedCity = MKCoordinateRegion(
                     center: CLLocationCoordinate2D(latitude: city.latitude, longitude: city.longitude), span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
@@ -114,7 +114,7 @@ struct MapView: View {
     }
 }
 /*
-#Preview {
-    MapView()
-}
-*/
+ #Preview {
+ MapView()
+ }
+ */

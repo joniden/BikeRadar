@@ -66,22 +66,20 @@ struct ItemInfoView: View {
                     }
                     VStack(alignment: .leading) {
                         HStack {
-                            if let distance {
-                                Image(systemName: "location.fill")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("\(distance) away")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            if let travelTime {
-                                Image(systemName: "figure.walk")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("\(travelTime)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
+                            Image(systemName: "location.fill")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Text("\(distance ?? "           ")")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Image(systemName: "figure.walk")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Text("\(travelTime ?? "")")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
                         HStack {
                             Button {
@@ -110,6 +108,9 @@ struct ItemInfoView: View {
         .background(RoundedRectangle(cornerRadius: 15).fill(Color.white))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding()
+        .onAppear {
+            getDirections(station: selectedStation)
+        }
         .onChange(of: selectedStation) {
             getDirections(station: selectedStation)
             showRoute = false
