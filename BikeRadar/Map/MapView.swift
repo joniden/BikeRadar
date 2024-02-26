@@ -20,24 +20,13 @@ struct MapView: View {
     @State var network: Network
     @State private var showInfoView = false
     @State var viewState = CGSize.zero
+    @State private var selectedTag: String?
     
     var body: some View {
-        Map(position: $position) {
-            ForEach(dataService.stations) { station in
-                Annotation(station.name ?? "\(network.name ?? "Bike") Station", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)) {
-                    Circle()
-                        .fill(Color.accentColor)
-                        .frame(width: 30, height: 30)
-                        .overlay {
-                            Image(systemName: "mappin.circle")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                        }
-                        .onTapGesture {
-                            selectedStation = station
-                            showInfoView = true
-                        }
-                }
+        Map(position: $position, selection: $selectedTag) {
+            ForEach(dataService.stations, id: \.id) { station in
+                Marker(station.name ?? "\(network.name ?? "Bike") Station", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude))
+                    .tag(station.id)
             }
             
             if let route {
@@ -49,6 +38,8 @@ struct MapView: View {
             
             UserAnnotation()
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
             locationsHandler.requestATTPermission()
         }
@@ -59,6 +50,15 @@ struct MapView: View {
             }
             if let selectedCity {
                 position = .region(selectedCity)
+            }
+        }
+        .task {
+            do {
+                try await dataService.fetchStations(networkId: network.id ?? "noId")
+                print("stations: \(dataService.stations.count)")
+            } catch {
+                // handle error
+                print("Failed to fetch data: \(error)")
             }
         }
         .mapStyle(.standard(elevation: .realistic))
@@ -89,7 +89,9 @@ struct MapView: View {
         .onChange(of: dataService.stations) {
             position = .automatic
         }
-        .onChange(of: selectedStation) {
+        .onChange(of: selectedTag) {
+            selectedStation = dataService.stations.first(where: { $0.id == selectedTag})
+            showInfoView = true
             if let selectedStation {
                 let selectedStationRegion = MKCoordinateRegion(
                     center: CLLocationCoordinate2D(latitude: selectedStation.latitude, longitude: selectedStation.longitude), span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02))
@@ -99,9 +101,7 @@ struct MapView: View {
         .onChange(of: showRoute) {
             if let route {
                 let routeRect = route.polyline.boundingMapRect
-                // let paddedRouteRect = routeRect.insetBy(dx: -100, dy: -100)
                 var routeRegion = MKCoordinateRegion(routeRect)
-                //  routeRegion.span = MKCoordinateSpan(latitudeDelta: 0.043, longitudeDelta: 0.043)
                 position = .region(routeRegion)
             }
         }
@@ -115,7 +115,8 @@ struct MapView: View {
         }
     }
 }
-
-/*#Preview {
- MapView()
- }*/
+/*
+#Preview {
+    MapView()
+}
+*/

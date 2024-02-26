@@ -103,7 +103,7 @@ struct ItemInfoView: View {
                             if let distance {
                                 Image(systemName: "location.fill")
                                     .font(.caption)
-                                    .foregroundColor(.accentColor)
+                                    .foregroundColor(.secondary)
                                 Text("\(distance) away")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
@@ -111,12 +111,11 @@ struct ItemInfoView: View {
                             if let travelTime {
                                 Image(systemName: "figure.walk")
                                     .font(.caption)
-                                    .foregroundColor(.accentColor)
+                                    .foregroundColor(.secondary)
                                 Text("\(travelTime)")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            
                         }
                         HStack {
                             Button {
@@ -132,7 +131,6 @@ struct ItemInfoView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-                        
                     }
                 }
                 if let lookAroundScene {
