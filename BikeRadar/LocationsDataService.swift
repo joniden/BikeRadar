@@ -43,7 +43,7 @@ class LocationsDataService: ObservableObject {
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
-
+        
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         decoder.dateDecodingStrategy = .iso8601
@@ -53,12 +53,19 @@ class LocationsDataService: ObservableObject {
             if let stations = networkResponse.network.stations {
                 DispatchQueue.main.async {
                     self.stations = stations
+                    print("stations found: \(self.stations.count)")
                 }
             } else {
                 throw NetworkError.invalidData
             }
         } catch {
-            throw NetworkError.decodingError(error)
+            if let networkError = error as? DecodingError {
+                // Handle the case where 'stations' is not an array
+                throw NetworkError.invalidData
+            } else {
+                // Handle other decoding errors
+                throw NetworkError.decodingError(error)
+            }
         }
     }
 }
@@ -84,7 +91,7 @@ struct Location: Codable {
 }
 
 struct Station: Identifiable, Decodable, Equatable {
-    let emptySlots: Int
+    let emptySlots: Int?
     let freeBikes: Int
     let id: String
     let latitude: Double

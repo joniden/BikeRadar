@@ -17,6 +17,114 @@ struct ItemInfoView: View {
     
     var selectedStation: Station
     
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("\(selectedStation.name ?? "")")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.leading)
+                    .foregroundColor(.primary)
+                Spacer()
+                Button {
+                    showLookAround.toggle()
+                } label: {
+                    Image(systemName: showLookAround ? "info.circle" : "eye")
+                        .foregroundColor(.accentColor)
+                        .padding()
+                        .frame(width: 44, height: 44)
+                }
+            }
+            
+            ZStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading) {
+                        HStack(alignment: .bottom, spacing: 4) {
+                            Text("Free bikes:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("\(selectedStation.freeBikes)")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                        }
+                        
+                        HStack(alignment: .bottom, spacing: 4) {
+                            Text("Empty slots:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            if let emptySlots = selectedStation.emptySlots {
+                                Text("\(emptySlots)")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                            } else {
+                                Text("unknown")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                        }
+                    }
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Image(systemName: "location.fill")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Text("\(distance ?? "           ")")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Image(systemName: "figure.walk")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Text("\(travelTime ?? "")")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        HStack {
+                            Button {
+                                showRoute = true
+                            } label: {
+                                Text("See Route")
+                                    .font(.caption)
+                            }
+                            
+                            Spacer()
+                            
+                            Text("Last updated \(timestamp)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                if let lookAroundScene {
+                    LookAroundPreview(initialScene: lookAroundScene)
+                        .frame(height: 128)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+            }
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 15).fill(Color.white))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding()
+        .onAppear {
+            getDirections(station: selectedStation)
+        }
+        .onChange(of: selectedStation) {
+            getDirections(station: selectedStation)
+            showRoute = false
+            showLookAround = false
+        }
+        .onChange(of: showLookAround) {
+            if showLookAround {
+                getLookAroundScene(station: selectedStation)
+            } else {
+                lookAroundScene = nil
+            }
+        }
+    }
+    
     private var distance: String? {
         guard let route, route.distance >= 0 else { return nil }
         let formatter = MeasurementFormatter()
@@ -55,106 +163,6 @@ struct ItemInfoView: View {
             return outputFormatter.string(from: date)
         } else {
             return "Invalid Timestamp"
-        }
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text("\(selectedStation.name ?? "")")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.leading)
-                    .foregroundColor(.primary)
-                Spacer()
-                Button {
-                    showLookAround.toggle()
-                } label: {
-                    Image(systemName: showLookAround ? "info.circle" : "eye")
-                        .foregroundColor(.accentColor)
-                        .padding()
-                        .frame(width: 44, height: 44)
-                }
-            }
-            
-            ZStack {
-                VStack(alignment: .leading, spacing: 6) {
-                    VStack(alignment: .leading) {
-                        HStack(alignment: .bottom, spacing: 4) {
-                            Text("Free bikes:")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text("\(selectedStation.freeBikes)")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                        }
-                        
-                        HStack(alignment: .bottom, spacing: 4) {
-                            Text("Empty slots:")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Text("\(selectedStation.emptySlots)")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                        }
-                    }
-                    VStack(alignment: .leading) {
-                        HStack {
-                            if let distance {
-                                Image(systemName: "location.fill")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("\(distance) away")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            if let travelTime {
-                                Image(systemName: "figure.walk")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("\(travelTime)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        HStack {
-                            Button {
-                                showRoute = true
-                            } label: {
-                                Text("See Route")
-                                    .font(.caption)
-                            }
-                            
-                            Spacer()
-                            
-                            Text("Last updated \(timestamp)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                if let lookAroundScene {
-                    LookAroundPreview(initialScene: lookAroundScene)
-                        .frame(height: 128)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
-            }
-        }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 15).fill(Color.white))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .padding()
-        .onChange(of: selectedStation) {
-            getDirections(station: selectedStation)
-            showRoute = false
-            showLookAround = false
-        }
-        .onChange(of: showLookAround) {
-            if showLookAround {
-                getLookAroundScene(station: selectedStation)
-            } else {
-                lookAroundScene = nil
-            }
         }
     }
     
