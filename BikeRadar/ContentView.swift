@@ -17,7 +17,7 @@ struct ContentView: View {
     @State private var selectedCity: String? = nil
     @State private var networks: [Network] = []
     let imageNames = ["tiffany", "westend", "fixie"]
-    @State var image = ""
+    @State var image: String? = nil
     
     var body: some View {
         NavigationStack {
@@ -43,7 +43,7 @@ struct ContentView: View {
                     }
                 ScrollView {
                     if dataService.networks.isEmpty {
-                        Text("Loading data...")
+                        Text("Loading...")
                             .foregroundStyle(Color.secondary)
                             .padding()
                     } else {
@@ -99,7 +99,7 @@ struct ContentView: View {
             .padding()
             .background(alignment: .center, content: {
                 GeometryReader { geometry in
-                    Image(image)
+                    Image(image ?? "fixie")
                         .resizable()
                         .scaledToFill()
                         .frame(width: geometry.size.width)
@@ -113,16 +113,12 @@ struct ContentView: View {
             .task {
                 do {
                     image = imageNames.randomElement() ?? "tiffany"
-                    print("contentview Appeared")
                     try await dataService.fetchData()
-                    print("networks: \(dataService.networks.count)")
+                    print("networks found: \(dataService.networks.count)")
                 } catch {
                     // handle error
                     print("Failed to fetch data: \(error)")
                 }
-            }
-            .onChange(of: selectedCity) {
-                print("selectedCity \(selectedCity)")
             }
             .onDisappear {
                 // Reset search-related variables
@@ -130,7 +126,6 @@ struct ContentView: View {
                 textInput = ""
                 selectedCity = nil
                 networks = []
-                print("contentview Disappeared")
             }
         }
     }

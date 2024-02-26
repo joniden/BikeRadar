@@ -42,8 +42,7 @@ struct MapView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .onAppear {
             locationsHandler.requestATTPermission()
-        }
-        .onAppear {
+
             if let city = network.location {
                 selectedCity = MKCoordinateRegion(
                     center: CLLocationCoordinate2D(latitude: city.latitude, longitude: city.longitude), span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
@@ -55,7 +54,6 @@ struct MapView: View {
         .task {
             do {
                 try await dataService.fetchStations(networkId: network.id ?? "noId")
-                print("stations: \(dataService.stations.count)")
             } catch {
                 // handle error
                 print("Failed to fetch data: \(error)")

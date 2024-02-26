@@ -17,47 +17,6 @@ struct ItemInfoView: View {
     
     var selectedStation: Station
     
-    private var distance: String? {
-        guard let route, route.distance >= 0 else { return nil }
-        let formatter = MeasurementFormatter()
-        formatter.unitOptions = .providedUnit
-        formatter.unitStyle = .medium
-        let distanceMeasurement: Measurement<UnitLength>
-        if route.distance >= 1000 {
-            distanceMeasurement = Measurement(value: route.distance / 1000, unit: UnitLength.kilometers)
-        } else {
-            distanceMeasurement = Measurement(value: route.distance, unit: UnitLength.meters)
-        }
-        formatter.numberFormatter.maximumFractionDigits = 1
-        return formatter.string(from: distanceMeasurement)
-    }
-    
-    private var travelTime: String? {
-        guard let route else { return nil }
-        let formatter = DateComponentsFormatter()
-        formatter.unitsStyle = .brief
-        formatter.allowedUnits = [.hour, .minute]
-        return formatter.string(from: route.expectedTravelTime)
-    }
-    
-    private var timestamp: String {
-        let inputFormatter = ISO8601DateFormatter()
-        inputFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let outputFormatter = DateFormatter()
-        outputFormatter.dateStyle = .short
-        outputFormatter.timeStyle = .short
-        
-        if let date = inputFormatter.date(from: selectedStation.timestamp) {
-            if Calendar.current.isDateInToday(date) {
-                outputFormatter.dateStyle = .none
-            }
-            outputFormatter.locale = Locale(identifier: "en_GB")
-            return outputFormatter.string(from: date)
-        } else {
-            return "Invalid Timestamp"
-        }
-    }
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
@@ -93,9 +52,16 @@ struct ItemInfoView: View {
                             Text("Empty slots:")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            Text("\(selectedStation.emptySlots)")
-                                .font(.caption)
-                                .fontWeight(.bold)
+                            if let emptySlots = selectedStation.emptySlots {
+                                Text("\(emptySlots)")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                            } else {
+                                Text("unknown")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
                         }
                     }
                     VStack(alignment: .leading) {
@@ -155,6 +121,47 @@ struct ItemInfoView: View {
             } else {
                 lookAroundScene = nil
             }
+        }
+    }
+    
+    private var distance: String? {
+        guard let route, route.distance >= 0 else { return nil }
+        let formatter = MeasurementFormatter()
+        formatter.unitOptions = .providedUnit
+        formatter.unitStyle = .medium
+        let distanceMeasurement: Measurement<UnitLength>
+        if route.distance >= 1000 {
+            distanceMeasurement = Measurement(value: route.distance / 1000, unit: UnitLength.kilometers)
+        } else {
+            distanceMeasurement = Measurement(value: route.distance, unit: UnitLength.meters)
+        }
+        formatter.numberFormatter.maximumFractionDigits = 1
+        return formatter.string(from: distanceMeasurement)
+    }
+    
+    private var travelTime: String? {
+        guard let route else { return nil }
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .brief
+        formatter.allowedUnits = [.hour, .minute]
+        return formatter.string(from: route.expectedTravelTime)
+    }
+    
+    private var timestamp: String {
+        let inputFormatter = ISO8601DateFormatter()
+        inputFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateStyle = .short
+        outputFormatter.timeStyle = .short
+        
+        if let date = inputFormatter.date(from: selectedStation.timestamp) {
+            if Calendar.current.isDateInToday(date) {
+                outputFormatter.dateStyle = .none
+            }
+            outputFormatter.locale = Locale(identifier: "en_GB")
+            return outputFormatter.string(from: date)
+        } else {
+            return "Invalid Timestamp"
         }
     }
     

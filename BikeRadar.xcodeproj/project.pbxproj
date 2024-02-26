@@ -60,12 +60,12 @@
 		C816CBC72B88CF220088B711 /* BikeRadar */ = {
 			isa = PBXGroup;
 			children = (
-				C88915D92B8A159A0072362E /* Map */,
-				C816CBE22B88DF220088B711 /* Info.plist */,
 				C816CBC82B88CF220088B711 /* BikeRadarApp.swift */,
 				C816CBCA2B88CF220088B711 /* ContentView.swift */,
 				C816CBDB2B88D2180088B711 /* LocationsDataService.swift */,
+				C88915D92B8A159A0072362E /* Map */,
 				C816CBCC2B88CF240088B711 /* Assets.xcassets */,
+				C816CBE22B88DF220088B711 /* Info.plist */,
 				C816CBCE2B88CF240088B711 /* Preview Content */,
 			);
 			path = BikeRadar;
