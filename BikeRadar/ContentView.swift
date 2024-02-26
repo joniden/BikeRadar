@@ -11,13 +11,9 @@ import Combine
 struct ContentView: View {
     
     @StateObject private var dataService = LocationsDataService()
-    @State private var textInput: String = ""
-    let textInputPublisher = PassthroughSubject<String, Never>()
     @State private var searchText = ""
     @State private var selectedCity: String? = nil
     @State private var networks: [Network] = []
-    let imageNames = ["tiffany", "westend", "fixie"]
-    @State var image: String? = nil
     
     var body: some View {
         NavigationStack {
@@ -27,20 +23,8 @@ struct ContentView: View {
                     .foregroundStyle(Color.primary)
                     .padding(.top, 32)
                 
-                TextField("Type a city", text: $textInput)
-                    .font(.title)
-                    .padding()
-                    .foregroundColor(.primary)
-                    .background(RoundedRectangle(cornerRadius: 10).foregroundColor(.secondary.opacity(0.2)))
-                    .onChange(of: textInput) {
-                        textInputPublisher.send(textInput)
-                    }
-                    .onReceive(textInputPublisher
-                        .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
-                        .removeDuplicates()
-                    ) { debouncedTextInput in
-                        searchText = debouncedTextInput
-                    }
+                SearchTextField(searchText: $searchText)
+                
                 ScrollView {
                     if dataService.networks.isEmpty {
                         Text("Loading...")
@@ -49,55 +33,20 @@ struct ContentView: View {
                     } else {
                         if let selectedCity {
                             // Show list of networks for selected city
-                            NetworksList(dataService: dataService, selectedCity: selectedCity)
+                            NetworksListView(dataService: dataService, selectedCity: selectedCity)
                         } else {
                             // Show list of cities
-                            LazyVStack(alignment: .leading) {
-                                ForEach(filteredCities, id: \.self) { city in
-                                    Button {
-                                        selectedCity = city
-                                    } label: {
-                                        HStack {
-                                            Text(city)
-                                                .font(.title2)
-                                                .foregroundStyle(Color.primary)
-                                                .multilineTextAlignment(.leading)
-                                                .padding(4)
-                                            Spacer()
-                                            Image(systemName: "chevron.right")
-                                                .foregroundStyle(Color.primary)
-                                        }
-                                    }
-                                }
-                            }
+                            CitiesListView(dataService: dataService, searchText: $searchText, selectedCity: $selectedCity)
                         }
                     }
                 }
-              /*  .onChange(of: selectedCity) {
-                    if let selectedCity {
-                        networks = networksForCity(selectedCity)
-                    } else {
-                        networks = []
-                    }
-                }*/
             }
             .padding()
             .background(alignment: .center, content: {
-                GeometryReader { geometry in
-                    Image(image ?? "fixie")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: geometry.size.width)
-                        .ignoresSafeArea()
-                        .overlay {
-                            Color.white.opacity(0.3)
-                                .ignoresSafeArea()
-                        }
-                }
+                BackgroundImageView()
             })
             .task {
                 do {
-                    image = imageNames.randomElement() ?? "tiffany"
                     try await dataService.fetchData()
                     print("networks found: \(dataService.networks.count)")
                 } catch {
@@ -106,21 +55,16 @@ struct ContentView: View {
                 }
             }
             .onDisappear {
-                // Reset search-related variables
-                searchText = ""
-                textInput = ""
-                selectedCity = nil
-                networks = []
+                resetValues()
             }
         }
     }
     
-    private var filteredCities: [String] {
-        return dataService.networks
-            .compactMap { $0.location?.city }
-            .filter {
-                $0.lowercased().contains(searchText.lowercased())
-            }
+    private func resetValues() {
+        // Reset search-related variables
+        searchText = ""
+        selectedCity = nil
+        networks = []
     }
 }
 
@@ -128,20 +72,15 @@ struct ContentView: View {
     ContentView()
 }
 
-struct NetworksList: View {
-    @ObservedObject private var dataService: LocationsDataService
+struct NetworksListView: View {
+    @ObservedObject var dataService: LocationsDataService
     let selectedCity: String
-    
-    init(dataService: LocationsDataService, selectedCity: String) {
-        self.dataService = dataService
-        self.selectedCity = selectedCity
-    }
     
     var body: some View {
         ForEach(networksForCity(selectedCity)) { network in
             NavigationLink(destination: MapView(dataService: dataService, network: network)) {
                 HStack {
-                    Text(network.name ?? "test")
+                    Text(network.name ?? "No name network")
                         .font(.title2)
                         .foregroundStyle(Color.primary)
                         .multilineTextAlignment(.leading)
@@ -155,9 +94,92 @@ struct NetworksList: View {
     }
     
     private func networksForCity(_ city: String) -> [Network] {
-        print("Fetching networks for \(city)")
+        print("Filtering networks for \(city)")
         return dataService.networks.filter { network in
             return network.location?.city.lowercased() == city.lowercased()
         }
+    }
+}
+
+struct CitiesListView: View {
+    @ObservedObject var dataService: LocationsDataService
+    @Binding var searchText: String
+    @Binding var selectedCity: String?
+    
+    var body: some View {
+        LazyVStack(alignment: .leading) {
+            ForEach(filteredCities, id: \.self) { city in
+                Button {
+                    selectedCity = city
+                } label: {
+                    HStack {
+                        Text(city)
+                            .font(.title2)
+                            .foregroundStyle(Color.primary)
+                            .multilineTextAlignment(.leading)
+                            .padding(4)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(Color.primary)
+                    }
+                }
+            }
+        }
+    }
+    
+    private var filteredCities: [String] {
+        return dataService.networks
+            .compactMap { $0.location?.city }
+            .filter {
+                $0.lowercased().contains(searchText.lowercased())
+            }
+    }
+}
+
+struct BackgroundImageView: View {
+    let imageNames = ["tiffany", "westend", "fixie"]
+    @State private var imageName: String?
+    
+    var body: some View {
+        GeometryReader { geometry in
+            Image(imageName ?? "fixie")
+                .resizable()
+                .scaledToFill()
+                .frame(width: geometry.size.width)
+                .ignoresSafeArea()
+                .overlay {
+                    Color.white.opacity(0.3)
+                        .ignoresSafeArea()
+                }
+                .onAppear {
+                    imageName = imageNames.randomElement()
+                }
+        }
+    }
+}
+
+struct SearchTextField: View {
+    @Binding var searchText: String
+    @State private var textInput: String = ""
+    let textInputPublisher = PassthroughSubject<String, Never>()
+    
+    var body: some View {
+        TextField("Type a city", text: $textInput)
+            .font(.title)
+            .padding()
+            .foregroundColor(.primary)
+            .background(RoundedRectangle(cornerRadius: 10).foregroundColor(.secondary.opacity(0.2)))
+            .onChange(of: textInput) {
+                textInputPublisher.send(textInput)
+            }
+            .onReceive(textInputPublisher
+                .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+                .removeDuplicates()
+            ) { debouncedTextInput in
+                searchText = debouncedTextInput
+            }
+            .onDisappear {
+                textInput = ""
+            }
     }
 }
