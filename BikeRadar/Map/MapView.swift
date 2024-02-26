@@ -67,7 +67,7 @@ struct MapView: View {
             do {
                 try await dataService.fetchStations(networkId: network.id ?? "noId")
                 print("stations: \(dataService.stations.count)")
-                print("stations id: \(dataService.stations[0].id)")
+             //   print("stations id: \(dataService.stations[0].id)")
             } catch {
                 // handle error
                 print("Failed to fetch data: \(error)")

@@ -71,18 +71,27 @@ struct ContentView: View {
                     }
                 }
             }
-        }
-        .task {
-            do {
-                try await dataService.fetchData()
-                print("networks: \(dataService.networks.count)")
-            } catch {
-                // handle error
-                print("Failed to fetch data: \(error)")
+            .task {
+                do {
+                    print("contentview Appeared")
+                    try await dataService.fetchData()
+                    print("networks: \(dataService.networks.count)")
+                } catch {
+                    // handle error
+                    print("Failed to fetch data: \(error)")
+                }
             }
-        }
-        .onChange(of: selectedCity) {
-            print("selectedCity \(selectedCity)")
+            .onChange(of: selectedCity) {
+                print("selectedCity \(selectedCity)")
+            }
+            .onDisappear {
+                // Reset search-related variables
+                searchText = ""
+                textInput = ""
+                selectedCity = nil
+                networks = []
+                print("contentview Disappeared")
+            }
         }
     }
     
