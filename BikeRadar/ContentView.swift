@@ -49,21 +49,7 @@ struct ContentView: View {
                     } else {
                         if let selectedCity {
                             // Show list of networks for selected city
-                            ForEach(networks) { network in
-                                NavigationLink(destination: MapView(dataService: dataService, network: network)) {
-                                    HStack {
-                                        Text(network.name ?? "test")
-                                            .font(.title2)
-                                            .foregroundStyle(Color.primary)
-                                            .multilineTextAlignment(.leading)
-                                            .padding(4)
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .foregroundStyle(Color.primary)
-                                    }
-                                }
-                            }
-                            Spacer()
+                            NetworksList(dataService: dataService, selectedCity: selectedCity)
                         } else {
                             // Show list of cities
                             LazyVStack(alignment: .leading) {
@@ -83,18 +69,17 @@ struct ContentView: View {
                                         }
                                     }
                                 }
-                                Spacer()
                             }
                         }
                     }
                 }
-                .onChange(of: selectedCity) {
+              /*  .onChange(of: selectedCity) {
                     if let selectedCity {
                         networks = networksForCity(selectedCity)
                     } else {
                         networks = []
                     }
-                }
+                }*/
             }
             .padding()
             .background(alignment: .center, content: {
@@ -137,6 +122,37 @@ struct ContentView: View {
                 $0.lowercased().contains(searchText.lowercased())
             }
     }
+}
+
+#Preview {
+    ContentView()
+}
+
+struct NetworksList: View {
+    @ObservedObject private var dataService: LocationsDataService
+    let selectedCity: String
+    
+    init(dataService: LocationsDataService, selectedCity: String) {
+        self.dataService = dataService
+        self.selectedCity = selectedCity
+    }
+    
+    var body: some View {
+        ForEach(networksForCity(selectedCity)) { network in
+            NavigationLink(destination: MapView(dataService: dataService, network: network)) {
+                HStack {
+                    Text(network.name ?? "test")
+                        .font(.title2)
+                        .foregroundStyle(Color.primary)
+                        .multilineTextAlignment(.leading)
+                        .padding(4)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(Color.primary)
+                }
+            }
+        }
+    }
     
     private func networksForCity(_ city: String) -> [Network] {
         print("Fetching networks for \(city)")
@@ -144,8 +160,4 @@ struct ContentView: View {
             return network.location?.city.lowercased() == city.lowercased()
         }
     }
-}
-
-#Preview {
-    ContentView()
 }
