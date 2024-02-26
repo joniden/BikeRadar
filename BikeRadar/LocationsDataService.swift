@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import MapKit
 
 class LocationsDataService: ObservableObject {
     @Published var networks: [Network] = []
