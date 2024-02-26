@@ -16,13 +16,22 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var selectedCity: String? = nil
     @State private var networks: [Network] = []
+    let imageNames = ["tiffany", "westend", "fixie"]
+    @State var image = ""
     
     var body: some View {
         NavigationStack {
-            VStack {
-                TextField("Search for your city", text: $textInput)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Find bikes in...")
+                    .font(.title)
+                    .foregroundStyle(Color.primary)
+                    .padding(.top, 32)
+                
+                TextField("Type a city", text: $textInput)
+                    .font(.title)
                     .padding()
+                    .foregroundColor(.primary)
+                    .background(RoundedRectangle(cornerRadius: 10).foregroundColor(.secondary.opacity(0.2)))
                     .onChange(of: textInput) {
                         textInputPublisher.send(textInput)
                     }
@@ -35,26 +44,43 @@ struct ContentView: View {
                 ScrollView {
                     if dataService.networks.isEmpty {
                         Text("Loading data...")
+                            .foregroundStyle(Color.secondary)
+                            .padding()
                     } else {
                         if let selectedCity {
                             // Show list of networks for selected city
-                            if networks.count > 0 {
-                                ForEach(networks) { network in
-                                   
-                                    NavigationLink(destination: MapView(dataService: dataService, network: network)) {
+                            ForEach(networks) { network in
+                                NavigationLink(destination: MapView(dataService: dataService, network: network)) {
+                                    HStack {
                                         Text(network.name ?? "test")
+                                            .font(.title2)
+                                            .foregroundStyle(Color.primary)
+                                            .multilineTextAlignment(.leading)
+                                            .padding(4)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .foregroundStyle(Color.primary)
                                     }
                                 }
                             }
                             Spacer()
                         } else {
                             // Show list of cities
-                            LazyVStack {
+                            LazyVStack(alignment: .leading) {
                                 ForEach(filteredCities, id: \.self) { city in
                                     Button {
                                         selectedCity = city
                                     } label: {
-                                        Text(city)
+                                        HStack {
+                                            Text(city)
+                                                .font(.title2)
+                                                .foregroundStyle(Color.primary)
+                                                .multilineTextAlignment(.leading)
+                                                .padding(4)
+                                            Spacer()
+                                            Image(systemName: "chevron.right")
+                                                .foregroundStyle(Color.primary)
+                                        }
                                     }
                                 }
                                 Spacer()
@@ -62,7 +88,6 @@ struct ContentView: View {
                         }
                     }
                 }
-                .padding()
                 .onChange(of: selectedCity) {
                     if let selectedCity {
                         networks = networksForCity(selectedCity)
@@ -71,8 +96,23 @@ struct ContentView: View {
                     }
                 }
             }
+            .padding()
+            .background(alignment: .center, content: {
+                GeometryReader { geometry in
+                    Image(image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: geometry.size.width)
+                        .ignoresSafeArea()
+                        .overlay {
+                            Color.white.opacity(0.3)
+                                .ignoresSafeArea()
+                        }
+                }
+            })
             .task {
                 do {
+                    image = imageNames.randomElement() ?? "tiffany"
                     print("contentview Appeared")
                     try await dataService.fetchData()
                     print("networks: \(dataService.networks.count)")
@@ -114,35 +154,3 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-
-
-/*struct FancyLoadingView: View {
-    @State private var rotationAngle: Double = 0.0
-    
-    private var animation: Animation {
-        .linear
-        .speed(0.1)
-        .repeatForever(autoreverses: false)
-    }
-    
-    var body: some View {
-        VStack {
-            Image(systemName: "bicycle")
-                .rotationEffect(Angle(degrees: rotationAngle))
-                .foregroundColor(.blue)
-                .font(.system(size: 50))
-            
-            Text("Loading data...")
-                .font(.headline)
-                .foregroundColor(.gray)
-                .opacity(0.5)
-                .padding(.top, 8)
-        }
-        .onAppear {
-            withAnimation(animation) {
-                rotationAngle += 360.0
-            }
-        }
-    }
-}*/
-
