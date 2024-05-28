@@ -21,6 +21,7 @@ class LocationsDataService: ObservableObject {
         
         do {
             let result = try decoder.decode([String: [Network]].self, from: data)
+            // If you need to use strings in this, you need to change the response object
             if let networks = result["networks"] {
                 DispatchQueue.main.async {
                     self.networks = networks
@@ -34,6 +35,7 @@ class LocationsDataService: ObservableObject {
     }
     
     func fetchStations(networkId: String) async throws {
+        // Use \() instead of + +
         let urlString = "http://api.citybik.es/v2/networks/" + networkId + "?fields=stations"
         print("urlString: \(urlString)")
         
@@ -57,6 +59,16 @@ class LocationsDataService: ObservableObject {
             } else {
                 throw NetworkError.invalidData
             }
+        // This can be done more elegantly using 
+        /** 
+            } catch let error as DecodingError {
+               throw NetworkError.decodingError(error)
+            } catch let error {
+                throw error
+            }
+        }
+        */
+            
         } catch {
             if let networkError = error as? DecodingError {
                 // Handle the case where 'stations' is not an array
@@ -68,6 +80,8 @@ class LocationsDataService: ObservableObject {
         }
     }
 }
+
+// Add a little MARK: - Data Objects or something (can be moved to a separate file as well)
 
 struct NetworkResponse: Decodable {
     let network: Network
