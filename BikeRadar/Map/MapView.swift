@@ -9,12 +9,16 @@ import SwiftUI
 import MapKit
 
 struct MapView: View {
+    // Here is a great place to use dependency injection or environment object
     @ObservedObject var dataService: LocationsDataService
     @ObservedObject var locationsHandler = LocationsHandler.shared
     @State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
+    // Never changed
     @State private var route: MKRoute?
+    // This is never changed
     @State private var showRoute = false
     @State private var selectedStation: Station?
+    // Is this really used?
     @State private var selectedCity: MKCoordinateRegion?
     @State var network: Network
     @State private var showInfoView = false
@@ -26,7 +30,14 @@ struct MapView: View {
                 Marker(station.name ?? "\(network.name ?? "Bike") Station", coordinate: CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude))
                     .tag(station.id)
             }
-            
+
+            // Can be rewritten as 
+            /**
+            if let route, showRoute {
+                MapPolyline(route)
+                    .stroke(.blue, lineWidth: 5)
+            }
+            */
             if let route {
                 if showRoute {
                     MapPolyline(route)
@@ -49,6 +60,12 @@ struct MapView: View {
         }
         .mapStyle(.standard(elevation: .realistic))
         .safeAreaInset(edge: .bottom) {
+            // Can be rewritten as
+            /**
+            if let selectedStation, showInfoView {
+                InfoView(route: $route, showRoute: $showRoute, selectedStation: selectedStation, showInfoView: $showInfoView)
+            }
+            */
             if let selectedStation {
                 if showInfoView {
                     InfoView(route: $route, showRoute: $showRoute, selectedStation: selectedStation, showInfoView: $showInfoView)
@@ -70,6 +87,23 @@ struct MapView: View {
     
     private func setupInitialMapView() {
         locationsHandler.requestATTPermission()
+
+        /** 
+        You can make it a bit clearer
+        if let city = network.location {
+            let region = MKCoordinateRegion(
+                center: CLLocationCoordinate2D(
+                    latitude: city.latitude, 
+                    longitude: city.longitude
+                ), 
+                span: MKCoordinateSpan(
+                    latitudeDelta: 0.1, 
+                    longitudeDelta: 0.1
+                )
+            )
+            position = .region(region)
+        }
+        */
         
         if let city = network.location {
             selectedCity = MKCoordinateRegion(
