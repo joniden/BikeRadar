@@ -30,6 +30,15 @@ struct ContentView: View {
                         Text("Loading...")
                             .foregroundStyle(Color.secondary)
                             .padding()
+                    // Can be rewritten as 
+                     /*} else if let selectedCity {
+                            // Show list of networks for selected city
+                            NetworksListView(dataService: dataService, selectedCity: selectedCity)
+                        } else {
+                            // Show list of cities
+                            CitiesListView(dataService: dataService, searchText: $searchText, selectedCity: $selectedCity)
+                        }
+                        */
                     } else {
                         if let selectedCity {
                             // Show list of networks for selected city
@@ -49,6 +58,7 @@ struct ContentView: View {
                 do {
                     try await dataService.fetchData()
                     print("networks found: \(dataService.networks.count)")
+                // TODO: - Don't forget to actually handle
                 } catch {
                     // handle error
                     print("Failed to fetch data: \(error)")
@@ -71,7 +81,7 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-
+// Split the file so each struct is it's own view
 struct NetworksListView: View {
     @ObservedObject var dataService: LocationsDataService
     let selectedCity: String
@@ -119,14 +129,15 @@ struct CitiesListView: View {
                             .multilineTextAlignment(.leading)
                             .padding(4)
                         Spacer()
-                        Image(systemName: "chevron.right")
+                        Image(systemName: "chevron.right") // TODO: There is built in xcode to use generated resource
                             .foregroundStyle(Color.primary)
                     }
                 }
             }
         }
     }
-    
+
+    // This is great!
     private var filteredCities: [String] {
         return dataService.networks
             .compactMap { $0.location?.city }
@@ -136,21 +147,31 @@ struct CitiesListView: View {
     }
 }
 
+// Split to it's own file
 struct BackgroundImageView: View {
+
     let imageNames = ["tiffany", "westend", "fixie"]
+    // Since the image is never updated except "onAppear" you can simplify it using this instead
+    /*
+    private var imageName: String {
+        imageNames.randomElement()
+    }
+    */
     @State private var imageName: String?
-    
+
     var body: some View {
         GeometryReader { geometry in
             Image(imageName ?? "fixie")
                 .resizable()
                 .scaledToFill()
+                // This looks weird, should not be needed
                 .frame(width: geometry.size.width)
                 .ignoresSafeArea()
                 .overlay {
                     Color.white.opacity(0.3)
                         .ignoresSafeArea()
                 }
+                /* Remove this one */
                 .onAppear {
                     imageName = imageNames.randomElement()
                 }
@@ -158,6 +179,7 @@ struct BackgroundImageView: View {
     }
 }
 
+// Separate to it's own file
 struct SearchTextField: View {
     @Binding var searchText: String
     @State private var textInput: String = ""
@@ -169,9 +191,12 @@ struct SearchTextField: View {
             .padding()
             .foregroundColor(.primary)
             .background(RoundedRectangle(cornerRadius: 10).foregroundColor(.secondary.opacity(0.2)))
+            // I guess this is a hack to make it not search on every keystroke. But using onChange and onReceive is not necessary
+            // Because onChange is already listening on a publisher so it creates 2 steps instead of one.
             .onChange(of: textInput) {
                 textInputPublisher.send(textInput)
             }
+            
             .onReceive(textInputPublisher
                 .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
                 .removeDuplicates()
