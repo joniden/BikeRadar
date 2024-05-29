@@ -83,6 +83,7 @@ struct ContentView: View {
 }
 // Split the file so each struct is it's own view
 struct NetworksListView: View {
+    // Not needed, you can just use the filtered result instead. If the data is changing, the parent will redraw.
     @ObservedObject var dataService: LocationsDataService
     let selectedCity: String
     
@@ -102,7 +103,8 @@ struct NetworksListView: View {
             }
         }
     }
-    
+
+    // This can be a variable instead (TO BE CONTINUED)
     private func networksForCity(_ city: String) -> [Network] {
         print("Filtering networks for \(city)")
         return dataService.networks.filter { network in
